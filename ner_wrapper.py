@@ -65,15 +65,17 @@ def ner(model_name, label_list, text):
 
     predictions = predict_tokens(text)
 
+    return predictions
     # Pretty print results
+    
+if "__main__" == __name__:
+    model_name = "emanjavacas/GysBERT"
+    label_list = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC"]
+    text= "Jan de Vries werkt bij de Universiteit van Amsterdam in Nederland."
+    predictions = ner(model_name=model_name, label_list=label_list, text=text)
+
     print("Token Classification Results:")
     print("=" * 60)
     for i, (token, label, confidence) in enumerate(predictions):
         if token not in ['[CLS]', '[SEP]', '[PAD]']:
             print(f"{token:<15} {label:<10} {confidence:.3f}")
-
-if "__main__" == __name__:
-    model_name = "emanjavacas/GysBERT"
-    label_list = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC"]
-    text= "Jan de Vries werkt bij de Universiteit van Amsterdam in Nederland."
-    ner(model_name=model_name, label_list=label_list, text=text)
