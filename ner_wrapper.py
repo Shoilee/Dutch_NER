@@ -13,9 +13,11 @@ This script demonstrates
 from transformers import AutoModelForTokenClassification, AutoTokenizer
 import torch
 from torch.nn.functional import softmax
+import os
+import json
 
 
-def ner(model_name, label_list, text):
+def ner(model_name, label_list, text, ner_output_dir):
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     # Define your labels 
@@ -65,17 +67,25 @@ def ner(model_name, label_list, text):
 
     predictions = predict_tokens(text)
 
-    return predictions
+    valid_predictions = []
+
+    for _, (token, label, confidence) in enumerate(predictions):
+        if token not in ['[CLS]', '[SEP]', '[PAD]']:
+            valid_predictions.append({
+            "token": token,
+            "label": label, 
+            "confidence": round(float(confidence), 3)
+        })
+    filename = f"{os.path.join(ner_output_dir, 'ner_output')}.json"
+
+    with open(filename, 'w+', encoding='utf-8') as f:
+        json.dump(valid_predictions, f, indent=2, ensure_ascii=False)
+  
     # Pretty print results
     
 if "__main__" == __name__:
     model_name = "emanjavacas/GysBERT"
     label_list = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC"]
     text= "Jan de Vries werkt bij de Universiteit van Amsterdam in Nederland."
-    predictions = ner(model_name=model_name, label_list=label_list, text=text)
-
-    print("Token Classification Results:")
-    print("=" * 60)
-    for i, (token, label, confidence) in enumerate(predictions):
-        if token not in ['[CLS]', '[SEP]', '[PAD]']:
-            print(f"{token:<15} {label:<10} {confidence:.3f}")
+    output_dir = os.getcwd()
+    ner(model_name=model_name, label_list=label_list, text=text, ner_output_dir=output_dir)
